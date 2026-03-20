@@ -1,13 +1,13 @@
 server:
-  port: ${PORT:8081}
+  port: 8081
 
 spring:
   application:
     name: auth-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:}
-    username: ${SPRING_DATASOURCE_USERNAME:}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/auth_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
@@ -23,7 +23,7 @@ app:
     internal-api-key: ${APP_SECURITY_INTERNAL_API_KEY:inventory-internal-key}
   clients:
     reporting:
-      base-url: ${APP_CLIENTS_REPORTING_BASE_URL:}
+      base-url: ${APP_CLIENTS_REPORTING_BASE_URL:http://localhost:8084}
 
 logging:
   level:

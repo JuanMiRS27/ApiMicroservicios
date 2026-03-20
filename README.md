@@ -31,51 +31,6 @@ Backend para inventario de productos con un maximo de 4 microservicios:
 docker compose up --build
 ```
 
-## Despliegue en Cloud Run
-
-El repositorio quedo preparado para desplegar cada microservicio directamente desde Cloud Run usando Dockerfile en la raiz del repo:
-
-- `Dockerfile.auth-service`
-- `Dockerfile.catalog-service`
-- `Dockerfile.inventory-service`
-- `Dockerfile.reporting-service`
-
-Cambios aplicados para Cloud Run:
-
-- Cada servicio escucha automaticamente en `PORT`.
-- Los clientes internos descubren por defecto las URLs de Cloud Run usando el patron `https://SERVICE-PROJECT_NUMBER.REGION.run.app`.
-- Las llamadas internas entre servicios agregan automaticamente `X-Serverless-Authorization` con un ID token cuando corren en Cloud Run.
-- La configuracion de base de datos acepta `SPRING_DATASOURCE_*`, `DATABASE_URL`, `DATABASE_PUBLIC_URL`, `PG*` y `DB_*`.
-
-Variables recomendadas por servicio:
-
-- `SPRING_DATASOURCE_URL` o `DATABASE_URL`
-- `SPRING_DATASOURCE_USERNAME`
-- `SPRING_DATASOURCE_PASSWORD`
-- `APP_SECURITY_JWT_SECRET`
-- `APP_SECURITY_INTERNAL_API_KEY`
-
-Si dejas vacias `APP_CLIENTS_*_BASE_URL`, los servicios se resuelven solos en Cloud Run. Solo necesitas definirlas si quieres sobrescribir el destino por defecto.
-
-## Despliegue desde Google Cloud Shell
-
-Si quieres desplegar todo desde comandos y no servicio por servicio en la UI:
-
-```bash
-git clone https://github.com/JuanMiRS27/ApiMicroservicios.git
-cd ApiMicroservicios
-gcloud config set project TU_PROJECT_ID
-chmod +x scripts/deploy-cloud-run.sh
-./scripts/deploy-cloud-run.sh
-```
-
-El script [deploy-cloud-run.sh](/C:/Users/Asus/IdeaProjects/ApiMicroservicios/scripts/deploy-cloud-run.sh) hace esto:
-
-- habilita las APIs necesarias
-- crea Artifact Registry si no existe
-- ejecuta [cloudbuild.yaml](/C:/Users/Asus/IdeaProjects/ApiMicroservicios/cloudbuild.yaml)
-- construye y despliega los 4 microservicios en Cloud Run
-
 ## Servicios
 
 - Auth: `http://localhost:8081`

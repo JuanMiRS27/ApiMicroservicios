@@ -1,7 +1,5 @@
 package com.inventory.inventoryservice.client;
 
-import com.inventory.inventoryservice.config.CloudRunMetadataResolver;
-import com.inventory.inventoryservice.config.CloudRunRestClientFactory;
 import com.inventory.inventoryservice.config.InternalApiKeyFilter;
 import com.inventory.inventoryservice.dto.ProductValidationResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +14,9 @@ public class CatalogClient {
     private final String internalApiKey;
 
     public CatalogClient(RestClient.Builder builder,
-                         CloudRunRestClientFactory restClientFactory,
-                         CloudRunMetadataResolver metadataResolver,
-                         @Value("${app.clients.catalog.base-url:}") String configuredBaseUrl,
+                         @Value("${app.clients.catalog.base-url}") String baseUrl,
                          @Value("${app.security.internal-api-key:inventory-internal-key}") String internalApiKey) {
-        String baseUrl = metadataResolver.resolveServiceUrl(configuredBaseUrl, "catalog-service", 8082);
-        this.restClient = restClientFactory.create(builder, baseUrl);
+        this.restClient = builder.baseUrl(baseUrl).build();
         this.internalApiKey = internalApiKey;
     }
 

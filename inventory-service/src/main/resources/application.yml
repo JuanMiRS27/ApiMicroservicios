@@ -1,13 +1,13 @@
 server:
-  port: ${PORT:8083}
+  port: 8083
 
 spring:
   application:
     name: inventory-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:}
-    username: ${SPRING_DATASOURCE_USERNAME:}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5435/inventory_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   jpa:
     hibernate:
       ddl-auto: update
@@ -23,4 +23,4 @@ app:
     internal-api-key: ${APP_SECURITY_INTERNAL_API_KEY:inventory-internal-key}
   clients:
     catalog:
-      base-url: ${APP_CLIENTS_CATALOG_BASE_URL:}
+      base-url: ${APP_CLIENTS_CATALOG_BASE_URL:http://localhost:8082}
