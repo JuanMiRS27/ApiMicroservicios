@@ -1,5 +1,6 @@
 package com.inventory.catalogservice;
 
+import com.inventory.catalogservice.config.CloudDatabaseEnvironmentInitializer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class CatalogServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CatalogServiceApplication.class, args);
+        SpringApplication application = new SpringApplication(CatalogServiceApplication.class);
+        application.addInitializers(new CloudDatabaseEnvironmentInitializer());
+        application.run(args);
     }
 }

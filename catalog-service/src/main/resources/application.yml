@@ -1,13 +1,22 @@
 server:
-  port: 8082
+  port: ${PORT:${SERVER_PORT:8082}}
+  forward-headers-strategy: framework
 
 spring:
   application:
     name: catalog-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/catalog_db}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5434}/${PGDATABASE:catalog_db}}
+    username: ${SPRING_DATASOURCE_USERNAME:${PGUSER:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${PGPASSWORD:postgres}}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:5}
+      minimum-idle: ${DB_POOL_MIN_IDLE:1}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:20000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:5000}
+      data-source-properties:
+        sslmode: ${SPRING_DATASOURCE_SSLMODE:${PGSSLMODE:disable}}
   jpa:
     hibernate:
       ddl-auto: update

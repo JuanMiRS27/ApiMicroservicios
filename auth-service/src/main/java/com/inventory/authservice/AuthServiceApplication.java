@@ -1,5 +1,6 @@
 package com.inventory.authservice;
 
+import com.inventory.authservice.config.CloudDatabaseEnvironmentInitializer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class AuthServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AuthServiceApplication.class, args);
+        SpringApplication application = new SpringApplication(AuthServiceApplication.class);
+        application.addInitializers(new CloudDatabaseEnvironmentInitializer());
+        application.run(args);
     }
 }
