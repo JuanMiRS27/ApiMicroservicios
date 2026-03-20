@@ -1,0 +1,125 @@
+services:
+  auth-db:
+    image: postgres:16-alpine
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+
+  catalog-db:
+    image: postgres:16-alpine
+    container_name: catalog-db
+    environment:
+      POSTGRES_DB: catalog_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - catalog_data:/var/lib/postgresql/data
+
+  inventory-db:
+    image: postgres:16-alpine
+    container_name: inventory-db
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - inventory_data:/var/lib/postgresql/data
+
+  reporting-db:
+    image: postgres:16-alpine
+    container_name: reporting-db
+    environment:
+      POSTGRES_DB: reporting_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - reporting_data:/var/lib/postgresql/data
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: auth-service
+    depends_on:
+      - auth-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      APP_SECURITY_JWT_SECRET: "1234567890123456789012345678901234567890"
+      APP_SECURITY_INTERNAL_API_KEY: inventory-internal-key
+      APP_CLIENTS_REPORTING_BASE_URL: http://reporting-service:8084
+    ports:
+      - "8081:8081"
+
+  catalog-service:
+    build:
+      context: .
+      dockerfile: catalog-service/Dockerfile
+    container_name: catalog-service
+    depends_on:
+      - catalog-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://catalog-db:5432/catalog_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      APP_SECURITY_JWT_SECRET: "1234567890123456789012345678901234567890"
+      APP_SECURITY_INTERNAL_API_KEY: inventory-internal-key
+    ports:
+      - "8082:8082"
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: inventory-service/Dockerfile
+    container_name: inventory-service
+    depends_on:
+      - inventory-db
+      - catalog-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://inventory-db:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      APP_SECURITY_JWT_SECRET: "1234567890123456789012345678901234567890"
+      APP_SECURITY_INTERNAL_API_KEY: inventory-internal-key
+      APP_CLIENTS_CATALOG_BASE_URL: http://catalog-service:8082
+    ports:
+      - "8083:8083"
+
+  reporting-service:
+    build:
+      context: .
+      dockerfile: reporting-service/Dockerfile
+    container_name: reporting-service
+    depends_on:
+      - reporting-db
+      - catalog-service
+      - inventory-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://reporting-db:5432/reporting_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      APP_SECURITY_JWT_SECRET: "1234567890123456789012345678901234567890"
+      APP_SECURITY_INTERNAL_API_KEY: inventory-internal-key
+      APP_CLIENTS_CATALOG_BASE_URL: http://catalog-service:8082
+      APP_CLIENTS_INVENTORY_BASE_URL: http://inventory-service:8083
+    ports:
+      - "8084:8084"
+
+volumes:
+  auth_data:
+  catalog_data:
+  inventory_data:
+  reporting_data:
