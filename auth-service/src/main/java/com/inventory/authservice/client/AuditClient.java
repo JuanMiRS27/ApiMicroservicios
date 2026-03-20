@@ -1,6 +1,8 @@
 package com.inventory.authservice.client;
 
 import com.inventory.authservice.dto.AccessEventRequest;
+import com.inventory.authservice.config.CloudRunMetadataResolver;
+import com.inventory.authservice.config.CloudRunRestClientFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -13,9 +15,12 @@ public class AuditClient {
     private final String internalApiKey;
 
     public AuditClient(RestClient.Builder builder,
-                       @Value("${app.clients.reporting.base-url:http://localhost:8084}") String baseUrl,
+                       CloudRunRestClientFactory restClientFactory,
+                       CloudRunMetadataResolver metadataResolver,
+                       @Value("${app.clients.reporting.base-url:}") String configuredBaseUrl,
                        @Value("${app.security.internal-api-key:inventory-internal-key}") String internalApiKey) {
-        this.restClient = builder.baseUrl(baseUrl).build();
+        String baseUrl = metadataResolver.resolveServiceUrl(configuredBaseUrl, "reporting-service", 8084);
+        this.restClient = restClientFactory.create(builder, baseUrl);
         this.internalApiKey = internalApiKey;
     }
 

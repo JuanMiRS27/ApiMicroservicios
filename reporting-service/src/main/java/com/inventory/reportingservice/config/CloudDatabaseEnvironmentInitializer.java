@@ -28,17 +28,34 @@ public class CloudDatabaseEnvironmentInitializer implements ApplicationContextIn
 
         if (StringUtils.hasText(databaseUrl)) {
             applyDatabaseUrl(databaseUrl, properties, environment);
+        } else if (StringUtils.hasText(environment.getProperty("INSTANCE_CONNECTION_NAME"))
+                || StringUtils.hasText(environment.getProperty("CLOUD_SQL_INSTANCE_CONNECTION_NAME"))) {
+            properties.put("spring.datasource.url", buildCloudSqlJdbcUrl(
+                    firstNonBlank(
+                            environment.getProperty("INSTANCE_CONNECTION_NAME"),
+                            environment.getProperty("CLOUD_SQL_INSTANCE_CONNECTION_NAME")),
+                    firstNonBlank(
+                            environment.getProperty("DB_NAME"),
+                            environment.getProperty("PGDATABASE"),
+                            "reporting_db")));
         } else if (StringUtils.hasText(environment.getProperty("PGHOST"))) {
-            String jdbcUrl = "jdbc:postgresql://%s:%s/%s".formatted(
+            properties.put("spring.datasource.url", buildJdbcUrl(
                     environment.getProperty("PGHOST"),
                     environment.getProperty("PGPORT", "5432"),
-                    environment.getProperty("PGDATABASE", "reporting_db"));
-            properties.put("spring.datasource.url", jdbcUrl);
+                    environment.getProperty("PGDATABASE", "reporting_db")));
+        } else if (StringUtils.hasText(environment.getProperty("DB_HOST"))) {
+            properties.put("spring.datasource.url", buildJdbcUrl(
+                    environment.getProperty("DB_HOST"),
+                    environment.getProperty("DB_PORT", "5432"),
+                    environment.getProperty("DB_NAME", "reporting_db")));
         }
 
         putIfMissing(properties, environment, "spring.datasource.username", "PGUSER");
         putIfMissing(properties, environment, "spring.datasource.password", "PGPASSWORD");
+        putIfMissing(properties, environment, "spring.datasource.username", "DB_USER");
+        putIfMissing(properties, environment, "spring.datasource.password", "DB_PASSWORD");
         putIfMissing(properties, environment, "spring.datasource.hikari.data-source-properties.sslmode", "PGSSLMODE");
+        putIfMissing(properties, environment, "spring.datasource.hikari.data-source-properties.sslmode", "DB_SSL_MODE");
 
         if (!properties.isEmpty()) {
             environment.getPropertySources()
@@ -54,12 +71,11 @@ public class CloudDatabaseEnvironmentInitializer implements ApplicationContextIn
                 return;
             }
 
-            String jdbcUrl = "jdbc:postgresql://%s:%s%s%s".formatted(
+            properties.put("spring.datasource.url", buildJdbcUrl(
                     uri.getHost(),
-                    uri.getPort() > 0 ? uri.getPort() : 5432,
-                    uri.getPath(),
-                    uri.getQuery() == null ? "" : "?" + uri.getQuery());
-            properties.put("spring.datasource.url", jdbcUrl);
+                    String.valueOf(uri.getPort() > 0 ? uri.getPort() : 5432),
+                    uri.getPath().replaceFirst("^/", ""),
+                    uri.getQuery()));
 
             if (!StringUtils.hasText(environment.getProperty("spring.datasource.username"))) {
                 String userInfo = uri.getUserInfo();
@@ -86,6 +102,23 @@ public class CloudDatabaseEnvironmentInitializer implements ApplicationContextIn
                 && StringUtils.hasText(environment.getProperty(sourceProperty))) {
             properties.put(targetProperty, environment.getProperty(sourceProperty));
         }
+    }
+
+    private String buildJdbcUrl(String host, String port, String database) {
+        return buildJdbcUrl(host, port, database, null);
+    }
+
+    private String buildJdbcUrl(String host, String port, String database, String query) {
+        return "jdbc:postgresql://%s:%s/%s%s".formatted(
+                host,
+                port,
+                database,
+                StringUtils.hasText(query) ? "?" + query : "");
+    }
+
+    private String buildCloudSqlJdbcUrl(String instanceConnectionName, String database) {
+        return "jdbc:postgresql:///%s?cloudSqlInstance=%s&socketFactory=com.google.cloud.sql.postgres.SocketFactory"
+                .formatted(database, instanceConnectionName);
     }
 
     private String firstNonBlank(String... values) {

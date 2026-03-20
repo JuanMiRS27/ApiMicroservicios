@@ -1,5 +1,7 @@
 package com.inventory.reportingservice.client;
 
+import com.inventory.reportingservice.config.CloudRunMetadataResolver;
+import com.inventory.reportingservice.config.CloudRunRestClientFactory;
 import com.inventory.reportingservice.config.InternalApiKeyFilter;
 import com.inventory.reportingservice.dto.CategoryResponse;
 import com.inventory.reportingservice.dto.ProductResponse;
@@ -17,9 +19,12 @@ public class CatalogClient {
     private final String internalApiKey;
 
     public CatalogClient(RestClient.Builder builder,
-                         @Value("${app.clients.catalog.base-url}") String baseUrl,
+                         CloudRunRestClientFactory restClientFactory,
+                         CloudRunMetadataResolver metadataResolver,
+                         @Value("${app.clients.catalog.base-url:}") String configuredBaseUrl,
                          @Value("${app.security.internal-api-key:inventory-internal-key}") String internalApiKey) {
-        this.restClient = builder.baseUrl(baseUrl).build();
+        String baseUrl = metadataResolver.resolveServiceUrl(configuredBaseUrl, "catalog-service", 8082);
+        this.restClient = restClientFactory.create(builder, baseUrl);
         this.internalApiKey = internalApiKey;
     }
 

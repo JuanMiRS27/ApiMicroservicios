@@ -31,6 +31,32 @@ Backend para inventario de productos con un maximo de 4 microservicios:
 docker compose up --build
 ```
 
+## Despliegue en Cloud Run
+
+El repositorio quedo preparado para desplegar cada microservicio directamente desde Cloud Run usando Dockerfile en la raiz del repo:
+
+- `Dockerfile.auth-service`
+- `Dockerfile.catalog-service`
+- `Dockerfile.inventory-service`
+- `Dockerfile.reporting-service`
+
+Cambios aplicados para Cloud Run:
+
+- Cada servicio escucha automaticamente en `PORT`.
+- Los clientes internos descubren por defecto las URLs de Cloud Run usando el patron `https://SERVICE-PROJECT_NUMBER.REGION.run.app`.
+- Las llamadas internas entre servicios agregan automaticamente `X-Serverless-Authorization` con un ID token cuando corren en Cloud Run.
+- La configuracion de base de datos acepta `SPRING_DATASOURCE_*`, `DATABASE_URL`, `DATABASE_PUBLIC_URL`, `PG*` y `DB_*`.
+
+Variables recomendadas por servicio:
+
+- `SPRING_DATASOURCE_URL` o `DATABASE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `APP_SECURITY_JWT_SECRET`
+- `APP_SECURITY_INTERNAL_API_KEY`
+
+Si dejas vacias `APP_CLIENTS_*_BASE_URL`, los servicios se resuelven solos en Cloud Run. Solo necesitas definirlas si quieres sobrescribir el destino por defecto.
+
 ## Servicios
 
 - Auth: `http://localhost:8081`

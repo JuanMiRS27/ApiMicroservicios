@@ -1,8 +1,8 @@
 .git
 .idea
-.mvn
-target
 **/target
+**/.DS_Store
 README.md
 HELP.md
 docker-compose.yml
+scripts
