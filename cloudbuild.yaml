@@ -1,6 +1,12 @@
 substitutions:
   _REGION: us-central1
   _REPOSITORY: inventory-microservices
+  _JWT_SECRET: 4mPK0eNgsR4gF8nA6xLh3cQ9vT2yK1wM7bJ5zN8uP6sD0fH3qL9rC2tV7yX4kM1
+  _INTERNAL_API_KEY: 7yH3mQ9kP2vL6cN4rT8sX1bF5dJ0wA3z
+  _AUTH_DATABASE_URL: postgresql://postgres:yEBraCeTslUkpZwoNapXjJUXIhZAPpLS@ballast.proxy.rlwy.net:29640/railway
+  _CATALOG_DATABASE_URL: postgresql://postgres:pnLgzOFAlNchtkqZsDxxFedlRQmeHdUh@ballast.proxy.rlwy.net:59901/railway
+  _INVENTORY_DATABASE_URL: postgresql://postgres:OJpZdAHxuueZZHxiZOESvOBuTgCGcfZe@ballast.proxy.rlwy.net:12770/railway
+  _REPORTING_DATABASE_URL: postgresql://postgres:nwGInzlmMffCGhKViHGkiLJZKWROCoGx@ballast.proxy.rlwy.net:23217/railway
 
 steps:
   - id: build-auth
@@ -92,6 +98,9 @@ steps:
       - auth-service
       - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/auth-service:$COMMIT_SHA
       - --region=${_REGION}
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-env-vars=DATABASE_URL=${_AUTH_DATABASE_URL},APP_SECURITY_JWT_SECRET=${_JWT_SECRET},APP_SECURITY_INTERNAL_API_KEY=${_INTERNAL_API_KEY}
       - --quiet
 
   - id: deploy-catalog
@@ -103,6 +112,9 @@ steps:
       - catalog-service
       - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/catalog-service:$COMMIT_SHA
       - --region=${_REGION}
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-env-vars=DATABASE_URL=${_CATALOG_DATABASE_URL},APP_SECURITY_JWT_SECRET=${_JWT_SECRET},APP_SECURITY_INTERNAL_API_KEY=${_INTERNAL_API_KEY}
       - --quiet
 
   - id: deploy-inventory
@@ -114,6 +126,9 @@ steps:
       - inventory-service
       - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/inventory-service:$COMMIT_SHA
       - --region=${_REGION}
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-env-vars=DATABASE_URL=${_INVENTORY_DATABASE_URL},APP_SECURITY_JWT_SECRET=${_JWT_SECRET},APP_SECURITY_INTERNAL_API_KEY=${_INTERNAL_API_KEY}
       - --quiet
 
   - id: deploy-reporting
@@ -125,6 +140,9 @@ steps:
       - reporting-service
       - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/reporting-service:$COMMIT_SHA
       - --region=${_REGION}
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-env-vars=DATABASE_URL=${_REPORTING_DATABASE_URL},APP_SECURITY_JWT_SECRET=${_JWT_SECRET},APP_SECURITY_INTERNAL_API_KEY=${_INTERNAL_API_KEY}
       - --quiet
 
 images:
